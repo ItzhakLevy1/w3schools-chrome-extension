@@ -51,6 +51,7 @@ function initTTS() {
 
       // Select your preferred English voice from your available list:
       // Options: 'Google UK English Female', 'Google UK English Male', 'Google US English', 'Microsoft Zira', 'Microsoft Mark', 'Microsoft David'
+    //   const chosenVoice = getSelectedVoice('Microsoft Zira - English (United States)');
       const chosenVoice = getSelectedVoice("Google UK English Female");
       if (chosenVoice) {
         utterance.voice = chosenVoice;

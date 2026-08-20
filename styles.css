@@ -1,18 +1,24 @@
 /* Style for the text-to-speech button */
 .tts-btn {
-  margin-left: 8px;
+  margin-right: 8px;
   padding: 2px 6px;
   font-size: 12px;
   cursor: pointer;
   background-color: #04aa6d;
   color: white;
-  border: none;
+  border: 1px solid white;
   border-radius: 4px;
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
+  justify-content: center; /* Merges content to center */
   gap: 4px;
   transition: background-color 0.2s;
+
+  /* Lock button dimensions */
+  min-width: 75px; /* Set a fixed minimum width covering both texts */
+  height: 24px; /* Set a explicit height */
+  box-sizing: border-box; /* Ensures padding doesn't alter total dimensions */
 }
 
 .tts-btn:hover {
