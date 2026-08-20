@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "W3Schools Text to Speech",
+  "version": "1.0",
+  "description": "Adds a text-to-speech button to content elements on W3Schools",
+  "content_scripts": [
+    {
+      "matches": ["https://www.w3schools.com/*"],
+      "css": ["styles.css"],
+      "js": ["content.js"]
+    }
+  ]
+}
