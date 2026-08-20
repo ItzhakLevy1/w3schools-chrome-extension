@@ -1,31 +1,60 @@
-/* Style for the text-to-speech button */
+/* Style for individual block text-to-speech button */
 .tts-btn {
-  margin-right: 8px;
+  margin-left: 8px;
   padding: 2px 6px;
   font-size: 12px;
   cursor: pointer;
   background-color: #04aa6d;
   color: white;
-  border: 1px solid white;
+  border: none;
   border-radius: 4px;
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
-  justify-content: center; /* Merges content to center */
+  justify-content: center;
   gap: 4px;
   transition: background-color 0.2s;
-
-  /* Lock button dimensions */
-  min-width: 75px; /* Set a fixed minimum width covering both texts */
-  height: 24px; /* Set a explicit height */
-  box-sizing: border-box; /* Ensures padding doesn't alter total dimensions */
+  min-width: 75px;
+  height: 24px;
+  box-sizing: border-box;
 }
 
 .tts-btn:hover {
   background-color: #059862;
 }
 
-/* Style active speaking state */
 .tts-btn.speaking {
+  background-color: #d9534f;
+}
+
+.tts-btn.speaking:hover {
+  background-color: #c9302c;
+}
+
+/* Floating sticky button attached right below W3Schools subtopnav */
+.tts-btn-global {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 15px;
+  margin-right: 15px;
+  padding: 4px 12px;
+  height: 32px;
+  border-radius: 20px;
+  border: none;
+  background-color: #04aa6d;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  vertical-align: middle;
+  transform: translateY(-2px); /* דוחף את הכפתור מעט למעלה ליישור ממורכז */
+}
+
+.tts-btn-global:hover {
+  background-color: #059862;
+}
+
+.tts-btn-global.speaking {
   background-color: #d9534f;
 }

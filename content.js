@@ -1,7 +1,34 @@
+// English comments for codebase consistency
+
+// Helper function to extract clean text without injected TTS buttons
+function getCleanText(element) {
+  const clone = element.cloneNode(true);
+  clone
+    .querySelectorAll(".tts-btn, .tts-btn-global")
+    .forEach((btn) => btn.remove());
+  return clone.innerText.trim();
+}
+
 // Helper function to get a specific voice by name
 function getSelectedVoice(voiceName) {
   const voices = window.speechSynthesis.getVoices();
-  return voices.find((voice) => voice.name === voiceName) || null;
+  return (
+    voices.find(
+      (voice) => voice.name === voiceName || voice.name.includes(voiceName),
+    ) || null
+  );
+}
+
+// Reset all button UI states
+function resetAllButtons() {
+  document.querySelectorAll(".tts-btn, .tts-btn-global").forEach((b) => {
+    b.classList.remove("speaking");
+    if (b.classList.contains("tts-btn-global")) {
+      b.innerHTML = "📢 הקרא את כל הדף";
+    } else {
+      b.innerHTML = "🔊 השמע";
+    }
+  });
 }
 
 // Initialize Text-To-Speech functionality
@@ -11,17 +38,82 @@ function initTTS() {
     "h1, h2, h3, h4, p, ul, ol, div.ws-note, div.w3-example",
   );
 
+  // --- 1. Add "Read All Page" Button in Navigation Bar ---
+  if (!document.getElementById("tts-global-btn")) {
+    const getCertifiedLink = Array.from(document.querySelectorAll("a")).find(
+      (el) => el.textContent.trim().includes("Get Certified"),
+    );
+
+    if (getCertifiedLink) {
+      const globalBtn = document.createElement("button");
+      globalBtn.id = "tts-global-btn";
+      globalBtn.className = "tts-btn-global";
+      globalBtn.type = "button";
+      globalBtn.innerHTML = "📢 הקרא את כל הדף";
+
+      globalBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        window.speechSynthesis.cancel();
+
+        if (globalBtn.classList.contains("speaking")) {
+          resetAllButtons();
+          return;
+        }
+
+        resetAllButtons();
+
+        // Filter and extract clean text from top-level blocks
+        const allTextBlocks = Array.from(blockElements)
+          .filter(
+            (el) =>
+              !el.parentElement.closest("ul, ol, div.ws-note, div.w3-example"),
+          )
+          .map((el) => getCleanText(el))
+          .filter((text) => text.length > 0);
+
+        if (allTextBlocks.length === 0) return;
+
+        globalBtn.classList.add("speaking");
+        globalBtn.innerHTML = "⏹ עצור הקראה";
+
+        // Queue clean text blocks sequentially
+        allTextBlocks.forEach((text, index) => {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "en-US";
+
+          const chosenVoice = getSelectedVoice("Google UK English Female");
+          if (chosenVoice) {
+            utterance.voice = chosenVoice;
+          }
+
+          if (index === allTextBlocks.length - 1) {
+            utterance.onend = resetAllButtons;
+            utterance.onerror = resetAllButtons;
+          }
+
+          window.speechSynthesis.speak(utterance);
+        });
+      });
+
+      // Position between Get Certified and the 3-dots menu icon
+      getCertifiedLink.insertAdjacentElement("afterend", globalBtn);
+    }
+  }
+
+  // --- 2. Add Individual Block Buttons ---
   blockElements.forEach((el) => {
     if (
       el.dataset.ttsInitialized ||
       el.closest(".tts-btn") ||
+      el.closest("#tts-global-btn") ||
       el.parentElement.closest("ul, ol, div.ws-note, div.w3-example")
     ) {
       return;
     }
 
-    const textToRead = el.innerText.trim();
-    if (!textToRead) return;
+    const cleanText = getCleanText(el);
+    if (!cleanText) return;
 
     el.dataset.ttsInitialized = "true";
 
@@ -36,22 +128,15 @@ function initTTS() {
       window.speechSynthesis.cancel();
 
       if (btn.classList.contains("speaking")) {
-        btn.classList.remove("speaking");
-        btn.innerHTML = "🔊 השמע";
+        resetAllButtons();
         return;
       }
 
-      document.querySelectorAll(".tts-btn").forEach((b) => {
-        b.classList.remove("speaking");
-        b.innerHTML = "🔊 השמע";
-      });
+      resetAllButtons();
 
-      const utterance = new SpeechSynthesisUtterance(textToRead);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = "en-US";
 
-      // Select your preferred English voice from your available list:
-      // Options: 'Google UK English Female', 'Google UK English Male', 'Google US English', 'Microsoft Zira', 'Microsoft Mark', 'Microsoft David'
-    //   const chosenVoice = getSelectedVoice('Microsoft Zira - English (United States)');
       const chosenVoice = getSelectedVoice("Google UK English Female");
       if (chosenVoice) {
         utterance.voice = chosenVoice;
@@ -60,15 +145,8 @@ function initTTS() {
       btn.classList.add("speaking");
       btn.innerHTML = "⏹ עצור";
 
-      utterance.onend = () => {
-        btn.classList.remove("speaking");
-        btn.innerHTML = "🔊 השמע";
-      };
-
-      utterance.onerror = () => {
-        btn.classList.remove("speaking");
-        btn.innerHTML = "🔊 השמע";
-      };
+      utterance.onend = resetAllButtons;
+      utterance.onerror = resetAllButtons;
 
       window.speechSynthesis.speak(utterance);
     });
@@ -77,7 +155,7 @@ function initTTS() {
   });
 }
 
-// Ensure voices are loaded if triggered lazily by Chrome
+// Ensure voices are loaded properly in Chrome
 if (
   typeof speechSynthesis !== "undefined" &&
   speechSynthesis.onvoiceschanged !== undefined
